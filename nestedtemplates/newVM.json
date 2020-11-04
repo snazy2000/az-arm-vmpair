@@ -87,41 +87,37 @@
             "tags": "[parameters('resourceTags')]"
         },
         {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('vmName'),'/', variables('avExtensionName'))]",
-            "apiVersion": "2015-01-01",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "incremental",
-                "templateLink": {
-                    "uri": "https://gallery.azure.com/artifact/20161101/microsoft.antimalware-windows-arm.1.0.2/Artifacts/MainTemplate.json"
-                },
-                "parameters": {
-                    "vmName": {
-                        "value": "[parameters('vmName')]"
-                    },
-                    "location": {
-                        "value": "[resourceGroup().location]"
-                    },
-                    "RealtimeProtectionEnabled": {
-                        "value": "true"
-                    },
-                    "ScheduledScanSettingsIsEnabled": {
-                        "value": "false"
-                    },
-                    "ScheduledScanSettingsScanType": {
-                        "value": "Quick"
-                    },
-                    "ScheduledScanSettingsDay": {
-                        "value": "1"
-                    },
-                    "ScheduledScanSettingsTime": {
-                        "value": "840"
-                    }
-                }
-            },
+            "apiVersion": "2019-07-01",
+            "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
-            ]
+            ],
+
+            "properties": {
+                "publisher": "Microsoft.Azure.Security",
+                "type": "IaaSAntimalware",
+                "typeHandlerVersion": "1.3",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "AntimalwareEnabled": "true",
+                    "Exclusions": {
+                        "Extensions": ".log;.ldf",
+                        "Paths": "D:\\IISlogs;D:\\DatabaseLogs",
+                        "Processes": "mssence.svc"
+                    },
+
+                    "RealtimeProtectionEnabled": "true",
+                    "ScheduledScanSettings": {
+                        "isEnabled": "false",
+                        "scanType": "Quick",
+                        "day": "1",
+                        "time": "840"
+                    }
+                },
+                "protectedSettings": null
+            }
         },
         {
             "name": "[concat(parameters('vmName'),'/', variables('diagnosticsExtensionName'))]",
