@@ -7,7 +7,7 @@
 	  "minLength": 3,
 	  "maxLength": 13,
 	  "metadata": {
-		"description": "Naming prefix for each new resource created. 3-char min, 14-char max, lowercase alphanumeric."
+		"description": "Naming prefix for each new resource created. 3-char min, 14-char max, lowercase alphanumeric.  (01 / 02 will be appended to the end)"
 	  }
 	},
 	"vmSize": {
@@ -15,7 +15,7 @@
 	  "metadata": {
 		"description": "Size of the VMs to be created.  Select a SKU which supports SSD."
 	  },
-	  "defaultValue": "Standard_DS2_v2"
+	  "defaultValue": "Standard_F4s"
 	},
     "localAdminPassword": {
 	  "type": "securestring",
@@ -47,12 +47,20 @@
 	  "metadata": {
 		"description": "Name diagnostic storage account"
 	  },
-	  "defaultValue": ""
+	  "defaultValue": "stvmdiagprd001"
+	},
+	"diagnosticsStorageAccountRG": {
+	  "type": "string",
+	  "metadata": {
+		"description": "Diagnostic storage account Resource Group"
+	  },
+	  "defaultValue": "rg-SharedServices-prod-001"
 	},
 	"resourceTags": {
         "type": "object",
         "defaultValue": {
-            "Environment": "Dev"
+            "Environment": "Enviroment..",
+			"Service Name": "Service.."
         }
     },
 	"_artifactsLocation": {
@@ -107,6 +115,9 @@
 		  },
 		  "diagnosticsStorageAccountName": {
 			"value": "[parameters('diagnosticsStorageAccountName')]"
+		  },
+		  "diagnosticsStorageAccountRG": {
+			"value": "[parameters('diagnosticsStorageAccountRG')]"
 		  },
 		  "resourceTags": {
 			"value": "[parameters('resourceTags')]"

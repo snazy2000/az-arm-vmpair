@@ -47,6 +47,9 @@
 		"diagnosticsStorageAccountName": {
             "type": "string"
         },
+		"diagnosticsStorageAccountRG": {
+            "type": "string"
+        },
 		"resourceTags": {
             "type": "object"
         },
@@ -138,6 +141,9 @@
 					},
 					"diagnosticsStorageAccountName": {
 						"value": "[parameters('diagnosticsStorageAccountName')]"
+					},
+					"diagnosticsStorageAccountRG": {
+						"value": "[parameters('diagnosticsStorageAccountRG')]"
 					},
 					"resourceTags": {
 						"value": "[parameters('resourceTags')]"

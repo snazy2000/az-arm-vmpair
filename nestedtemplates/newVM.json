@@ -20,6 +20,9 @@
         "diagnosticsStorageAccountName": {
             "type": "string"
         },
+        "diagnosticsStorageAccountRG": {
+            "type": "string"
+        },
         "resourceTags": {
             "type": "object"
         }
@@ -402,7 +405,7 @@
                 },
                 "protectedSettings": {
                     "storageAccountName": "[parameters('diagnosticsStorageAccountName')]",
-                    "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagnosticsStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+                    "storageAccountKey": "[listKeys(resourceId(parameters('diagnosticsStorageAccountRG'), 'Microsoft.Storage/storageAccounts', parameters('diagnosticsStorageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
                     "storageAccountEndPoint": "https://core.windows.net/"
                 }
             },
