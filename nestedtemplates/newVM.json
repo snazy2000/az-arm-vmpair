@@ -115,7 +115,6 @@
                     }
                 }
             },
-            "tags": "[parameters('resourceTags')]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
             ]
