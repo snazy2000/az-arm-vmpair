@@ -408,7 +408,7 @@
             },
             "tags": "[parameters('resourceTags')]",
             "dependsOn": [
-                "[concat(parameters('vmName'),'/', variables('avExtensionName'))]"
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
             ]
         }
     ],
