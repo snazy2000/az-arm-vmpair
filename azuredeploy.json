@@ -1,0 +1,125 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+	"namePrefix": {
+	"type": "string",
+	  "minLength": 3,
+	  "maxLength": 13,
+	  "metadata": {
+		"description": "Naming prefix for each new resource created. 3-char min, 14-char max, lowercase alphanumeric."
+	  }
+	},
+	"vmSize": {
+	  "type": "string",
+	  "metadata": {
+		"description": "Size of the VMs to be created.  Select a SKU which supports SSD."
+	  },
+	  "defaultValue": "Standard_DS2_v2"
+	},
+    "localAdminPassword": {
+	  "type": "securestring",
+	  "minLength": 10,
+	  "metadata": {
+		"description": "Password for the Administrator account."
+	  }
+	},
+	"existingVirtualNetworkRGName": {
+	  "type": "string",
+	  "metadata": {
+		"description": "Name of a resource group which contains a pre-existing vNet to connect the Cluster to."
+	  }
+	},
+	"existingVirtualNetworkName": {
+	  "type": "string",
+	  "metadata": {
+		"description": "Name of a pre-existing vNet to connect the Cluster to."
+	  }
+	},
+	"existingSubnetName": {
+	  "type": "string",
+	  "metadata": {
+		"description": "Name of a pre-existing subnet to connect the Cluster to."
+	  }
+	},
+	"diagnosticsStorageAccountName": {
+	  "type": "string",
+	  "metadata": {
+		"description": "Name diagnostic storage account"
+	  },
+	  "defaultValue": ""
+	},
+	"resourceTags": {
+        "type": "object",
+        "defaultValue": {
+            "Environment": "Dev"
+        }
+    },
+	"_artifactsLocation": {
+	  "type": "string",
+	  "metadata": {
+		"description": "Location of resources that the script is dependent on such as linked templates and DSC modules"
+	  },
+	  "defaultValue": "https://raw.githubusercontent.com/snazy2000/az-arm-vmpair/master"
+	},
+	"_artifactsLocationSasToken": {
+	  "type": "securestring",
+	  "metadata": {
+		"description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+	  },
+	  "defaultValue": ""
+	}
+	
+  },
+  "variables": {
+	"subnetRef": "[resourceId(parameters('existingVirtualNetworkRGName'),'Microsoft.Network/virtualNetworks/subnets',parameters('existingVirtualNetworkName'),parameters('existingSubnetName'))]",
+	"deploySFCIClusterTemplateURL": "[concat(parameters('_artifactsLocation'),'/nestedtemplates/deploy-cluster.json',parameters('_artifactsLocationSasToken'))]",
+	"deploySFCICluster": "deploySFCICluster",
+	"vmCount" : 2
+  },
+  "resources": [
+	{
+	  "name": "[variables('deploySFCICluster')]",
+	  "type": "Microsoft.Resources/deployments",
+	  "apiVersion": "2015-01-01",
+	  "dependsOn": [],
+	  "properties": {
+		"mode": "Incremental",
+		"templateLink": {
+		  "uri": "[variables('deploySFCIClusterTemplateURL')]",
+		  "contentVersion": "1.0.0.0"
+		},
+		"parameters": {
+		  "namePrefix": {
+			"value": "[parameters('namePrefix')]"
+		  },
+          "localAdminPassword": {
+			"value": "[parameters('localAdminPassword')]"
+		  },
+		  "nicSubnetUri": {
+			"value": "[variables('subnetRef')]"
+		  },
+		  "vmSize": {
+			"value": "[parameters('vmSize')]"
+		  },
+		  "vmCount": {
+			"value": "[variables('vmCount')]"
+		  },
+		  "diagnosticsStorageAccountName": {
+			"value": "[parameters('diagnosticsStorageAccountName')]"
+		  },
+		  "resourceTags": {
+			"value": "[parameters('resourceTags')]"
+		  },
+		   "_artifactsLocation": {
+			"value": "[parameters('_artifactsLocation')]"
+		  },
+		  "_artifactsLocationSasToken": {
+			"value": "[parameters('_artifactsLocationSasToken')]"
+		  }
+		  
+		}
+	  }
+	}
+  ]
+}

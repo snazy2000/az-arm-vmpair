@@ -1,0 +1,149 @@
+﻿{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"namePrefix": {
+			"type": "string",
+			"minLength": 3,
+			"maxLength": 13,
+			"metadata": {
+				"description": "Naming prefix for each new resource created. 3-char min, 14-char max, lowercase alphanumeric"
+			}
+		},
+		"iteration": { 
+			"type": "array", 
+			"defaultValue": [ 
+					"01", 
+					"02"
+			 ] 
+	 },
+		"localAdminPassword": {
+			"type": "securestring",
+			"minLength": 5,
+			"metadata": {
+				"description": "Password for the Administrator account of the existing Active Directory Domain"
+			}
+		},  
+		"nicSubnetUri": {
+			"type": "string",
+			"metadata": {
+				"description": "Resource ID for existing vnet/subnet to which VM NICs should be attached"
+			}
+		},
+		"vmSize": {
+			"type": "string",
+			"metadata": {
+				"description": "Size of the VMs to be created"
+			}
+		},
+		"vmCount": {
+			"type": "int",
+			"minValue": 2,
+			"maxValue": 2,
+			"metadata": {
+				"description": "Number of VMs to be created in cluster (Min=2, Max=3)"
+			}
+		},
+		"diagnosticsStorageAccountName": {
+            "type": "string"
+        },
+		"resourceTags": {
+            "type": "object"
+        },
+		"_artifactsLocation": {
+			"type": "string"
+		},
+		"_artifactsLocationSasToken": {
+			"type": "string"
+		}
+	},
+	"variables": {
+		"vmNamePrefix": "[concat('VM', parameters('namePrefix'),'')]",
+        "machineNamePrefix": "[concat(parameters('namePrefix'),'')]",
+		"vmAvailabilitySetName": "[concat(variables('vmNamePrefix'),'-UKS-AS01')]",
+		"vmLoopTemplateURL": "[concat(parameters('_artifactsLocation'),'/nestedtemplates/newVM.json',parameters('_artifactsLocationSasToken'))]"
+    },
+	"resources": [
+		{
+			"type": "Microsoft.Compute/availabilitySets",
+			"name": "[variables('vmAvailabilitySetName')]",
+			"apiVersion": "2019-07-01",
+			"location": "[resourceGroup().location]",
+			"properties": {
+			    "platformFaultDomainCount": 2,
+				"platformUpdateDomainCount": 2
+			},
+            "sku": {
+                "name": "Aligned"
+            },
+			"tags": "[parameters('resourceTags')]"
+		},
+		{
+			"name": "[concat(variables('vmNamePrefix'), parameters('iteration')[copyIndex()], '-NIC01')]",
+			"type": "Microsoft.Network/networkInterfaces",
+			"location": "[resourceGroup().location]",
+			"apiVersion": "2018-10-01",
+			"copy": {
+				"name": "nicLoop",
+				"count": "[parameters('vmCount')]"
+			},
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"subnet": {
+								"id": "[parameters('nicSubnetUri')]"
+							},
+							"privateIPAllocationMethod": "Dynamic"
+						}
+					}
+				],
+				"enableAcceleratedNetworking": true 
+			},
+			"tags": "[parameters('resourceTags')]"
+		},
+		{
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2015-01-01",
+			"copy": {
+				"name": "virtualMachineLoop",
+				"count": "[parameters('vmCount')]"
+			},
+			"name": "[concat(variables('vmNamePrefix'),parameters('iteration')[copyIndex()])]",
+			"dependsOn": [
+				"nicLoop",
+				"[resourceId('Microsoft.Compute/availabilitySets', variables('vmAvailabilitySetName'))]"
+			],
+			"properties": {
+				"mode": "Incremental",
+				"templateLink": {
+					"uri": "[variables('vmLoopTemplateURL')]"
+				},
+				"parameters": {
+					"vmName": {
+						"value": "[concat(variables('vmNamePrefix'), parameters('iteration')[copyIndex()])]"
+					},
+					"machineName": {
+						"value": "[concat(variables('machineNamePrefix'), parameters('iteration')[copyIndex()])]"
+					},
+					"vmAvailabilitySetName": {
+						"value": "[variables('vmAvailabilitySetName')]"
+					},
+					"vmSize": {
+						"value": "[parameters('vmSize')]"
+					},
+					"localAdminPassword": {
+						"value": "[parameters('localAdminPassword')]"
+					},
+					"diagnosticsStorageAccountName": {
+						"value": "[parameters('diagnosticsStorageAccountName')]"
+					},
+					"resourceTags": {
+						"value": "[parameters('resourceTags')]"
+					}
+				}
+			}
+		}
+	]
+}

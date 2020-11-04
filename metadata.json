@@ -1,0 +1,7 @@
+{
+  "itemDisplayName": "DI Cluster",
+  "description": "This template creates two Azure VMs on an existing VNET.",
+  "summary": "This template creates two Azure VMs on an existing VNET.",
+  "githubUsername": "snazy2000",
+  "dateUpdated": "2020-10-23"
+}
