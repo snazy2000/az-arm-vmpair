@@ -28,7 +28,8 @@
         }
     },
     "variables": {
-        "diagnosticsExtensionName": "Microsoft.Insights.VMDiagnosticsSettings"
+        "diagnosticsExtensionName": "Microsoft.Insights.VMDiagnosticsSettings",
+        "avExtensionName": "microsoft.antimalware-windows"
     },
     "resources": [
         {
@@ -86,7 +87,7 @@
             "tags": "[parameters('resourceTags')]"
         },
         {
-            "name": "microsoft.antimalware-windows-20201104090220",
+            "name": "[concat(parameters('vmName'),'/', variables('avExtensionName'))]",
             "apiVersion": "2015-01-01",
             "type": "Microsoft.Resources/deployments",
             "properties": {
@@ -411,7 +412,7 @@
             },
             "tags": "[parameters('resourceTags')]",
             "dependsOn": [
-                "microsoft.antimalware-windows-20201104090220"
+                "[concat(parameters('vmName'),'/', variables('avExtensionName'))]"
             ]
         }
     ],
